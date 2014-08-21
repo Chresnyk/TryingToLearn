@@ -1,0 +1,52 @@
+PIC32F250.
+El hecho de configurar un pin como entrada digital, no tiene preferencia sobre el comando “TRIS”, es decir, aunque configuremos un pin con un “PORTSetPinsDigitalIn(IOPORT_B, BIT_15)”, en caso de que no parezca que es una entrada, deberemos configurarlo con “TRISBbits.TRISB15=1”
+For input only, peripheral pin select functionality does not have priority over TRISx settings. Therefore, when configuring RPn pin for input, the corresponding bit in the TRISx register must also be configured for input (set to ‘1’).  Página 143 datasheet.
+
+Programación de PICs.
+En caso de que se produzcan los siguientes errores al intentar programar por primera vez un microcontrolador, es un problema en el hardware de la placa.
+-“Target detected 
+Failed to get Device ID”
+-“ Target detected 
+Address: ffffffff Expected Value: 90002 Received Value: 0” (o similar)
+Revisar:
+Cortos, aunque es posible que no los haya.
+Conexiones, aunque todas puedan estar correctamente o eso parezca.
+Eliminar todas las posibles bolitas de estaño que queden entre las patas del micro.
+
+PORT y LAT
+En caso de que haya algún tipo de problema con una “pata” del micro que muestre un comportamiento extraño cuando usamos como instrucciones “PORT”, cambiar a usar el registro “LAT”.
+¿Por que?
+El LAT se usa para escribir y el PORT para leer. Inicialmente, en los microcontroladores se empleaba el registro LAT para volcar la información que se había escrito en el registro de salida, a diferencia del PORT, que se empleaba para leer la información que tenía cada pin del micro. Por otra parte, el registro PORT se emplea para leer el estado o nivel lógico al que se encuentra un PIN del micro, pudiendo ser diferente del que se ve en el registro LAT. Por ejemplo, si el pin del micro está a 0v, el registro PORT mostrará nivel bajo, mientras que el registro LAT puede mostrar un nivel alto en el caso de que se haya puesto con anterioridad ese registro a nivel alto y no se halla actualizado.
+Con el tiempo, Microchip intentó unificar ambos registros, pero en determinados micros esto todavía funciona así.
+
+PIC12FL1840
+Para configurar los pines del micro, dirigirse al registro “APFCON”, pag 112 datashet.
+
+PROGRAMACION MICRO.
+Problema en el MPLAB “function declared inplicit int”.
+Esto es debido a que la función que se emplea está definida, pero no está declarada.
+Tiene que estar declarada en el mismo fichero en el que se define o en otro, pero tiene que estar definida y declarada, sino el programa le asigna por defecto una declaración de “int”
+Eje:
+tUART2TX: estaba definida en el archivo “UART2.c” pero no estaba declarada en el archivo “UART2.h”, de ahí el warning del MPLAB. Además hay que sumarle que esta función no devolvía nada (void), de ahí mayores problemas.
+
+Cuando el MPLAB no reconozca la ruta de un archivo.
+Pueden ocurrir varias cosas:
+1.- Que el proyecto sea una copia de otro proyecto. En este caso, es posible que la persona que estuviese usando el MPLAB haya borrado del proyecto el archivo, pero sin embargo, el MPLAB todavía reconoce la ruta del archivo y sigue trabajando como si el archivo aun estuviese en el proyecto. En este caso, hay que añadir los archivos que faltan al proyecto.
+
+2.-Puede ser que se este trabajando en Linux y Windows, por lo que las barras de direccion “/” y “\” sean distintas y proteste pro eso.
+
+Nomenclatura de reles:
+
+Rated voltage:The Rated Coil Voltage of a relay is the voltage that the relay is supposed to receive in order to be energized. 
+This is the voltage that the relay ideally should receive when you energize it. So when designing a relay circuit, you should check its rated coil voltage on the datasheet of the specified relay, and make sure that you design the circuit so that it receives this voltage. 
+Although the relay may be able to be powered with less voltage, its set (also called operate) voltage, ideally, the relay should receive its rated coil voltage for standard operational use. 
+Do not use a voltage higher than the rated coil voltage. Too high of a voltage may damage or destroy the magnetic coil, whereas too little voltage may not give it not enough power to actuate. It's best to use a value near or between its rated coil voltage and its operate voltage. 
+
+Set voltage:The set or operate voltage of a relay is the minimum voltage that the relay can receive in order to operate with full functionality.
+If a relay fails to receive the set (operate) voltage, it may not have enough voltage in order to be energized and function properly.
+When designing a relay circuit, make sure that it at least receives its operate voltage. Ideally, it should receive the rated coil voltage, which is the voltage it was meant to receive to be powered with full functionality. But the circuit can also work at its minimum rating specified on the datasheet. 
+
+Modulos analogicos-digitales.
+Para desactivar el módulo analógico de un microcontrolador hay que apagarlo y deshabilitarlo, puesto que por defecto, determinados pines del micro estan preconfigurados como modulos analogicos de entrada. Por ejemplo en el pic24:
+AD1PCFG=0xFFFF; (todas las entradas/salidas digitales)
+AD1CON1bits.ADON = 0;  (el módulo analogico apagado)
