@@ -1,0 +1,35 @@
+void _ISRFAST __attribute__((interrupt, auto_psv, shadow))_T3Interrupt(void) {
+    // ----------------------------------------------------------------------
+    if (t3counter == 10) {
+        // Clear the interrupt flag and disable the timer3 interrupt
+        t3counter = 0;
+        luminareState=COMMUNICATING;
+        commandError = UPDATING_PS_ERROR;
+        IFS0bits.T3IF = 0;
+        IEC0bits.T3IE = 0;
+    } else {
+        IFS0bits.T3IF = 0;
+        t3counter++;
+    }
+}
+
+
+
+    // Init TIMER3, to exit from configuration state
+    T3CONbits.TON = 0; // Disable the timer3
+    T2CONbits.T32 = 0; // Timer2 and timer3, are 16bits
+    TMR3 = 0; // To be sure that it inits from 0
+    T3CONbits.TCS = 0; // Internal clock source (FOSC/2)
+    T3CONbits.TCKPS0 = 1;
+    T3CONbits.TCKPS0 = 1; // Prescaler 1:256
+    PR3=(unsigned int) ((FOSC / 2 / 256)*1);// Load the period into the PR3 register
+    T3CONbits.TGATE=0;  // TGATE Disable
+    IEC0bits.T3IE = 0; // Disable the interrupt
+    IPC2bits.T3IP0 = 1;
+    IPC2bits.T3IP1 = 1;
+    IPC2bits.T3IP1 = 0; // priority interrupts. Priority 3
+    T3CONbits.TON = 1; // Enable timer3
+
+
+ IEC0bits.T3IE = 1;
+ IEC0bits.T3IE = 0;
